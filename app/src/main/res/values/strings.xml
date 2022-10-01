@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">My first app</string>
+    <string name="js">JS</string>
+    <string name="go_land">Go Land</string>
+    <string name="le_gusta_programar">Le gusta programar?</string>
+    <string name="si">Si</string>
+    <string name="no">No</string>
+    <string name="java">Java</string>
+    <string name="python">Python</string>
+    <string name="lenguaje">Lenguaje:</string>
+    <string name="c_c">C/C++</string>
+    <string name="c">C#</string>
+    <string name="g_nero">Género:</string>
+    <string name="nacimiento">Nacimiento:</string>
+    <string name="limpiar">Limpiar</string>
+    <string name="enviar">Enviar</string>
+    <string name="jan_01_2020">JAN 01 2020</string>
+    <string name="digite_un_apellido">Digite un apellido</string>
+    <string name="digite_un_nombre">Digite un nombre</string>
+    <string-array name="gender">
+        <item>Masculino</item>
+        <item>Femenino</item>
+    </string-array>
+</resources>
