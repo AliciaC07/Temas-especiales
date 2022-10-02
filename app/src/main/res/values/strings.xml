@@ -18,7 +18,8 @@
     <string name="digite_un_apellido">Digite un apellido</string>
     <string name="digite_un_nombre">Digite un nombre</string>
     <string-array name="gender">
-        <item>Masculino</item>
+        <item>Select</item>
         <item>Femenino</item>
+        <item>Masculino</item>
     </string-array>
 </resources>

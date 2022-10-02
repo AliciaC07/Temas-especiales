@@ -2,6 +2,7 @@ package com.example.my_first_app;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.view.View;
@@ -20,8 +21,10 @@ public class MainActivity extends AppCompatActivity{
 
     private ArrayList<CheckBox> checkBoxesLanguages = new ArrayList<>();
 
-    private Button rButtonYes;
-    private Button rButtonNo;
+    private RadioButton rButtonYes;
+    private RadioButton rButtonNo;
+
+    private RadioGroup radioGroup;
 
 
     @Override
@@ -43,13 +46,77 @@ public class MainActivity extends AppCompatActivity{
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spinner.setAdapter(adapter);
 
+        radioGroup = findViewById(R.id.radioGroup);
         rButtonYes = findViewById(R.id.rb_yes);
         rButtonNo = findViewById(R.id.rb_no);
+
 
         //CB
         gettingCheckboxes();
 
 
+
+    }
+
+    public void getInformation(View view){
+        String message = "";
+        StringBuilder languages= new StringBuilder();
+
+        if (!verificationFields())return;
+
+        if (rButtonNo.isChecked()){
+            message = "Hola! Mi nombre es: "+name.getText().toString()+".\n\n Soy "+spinner.getSelectedItem().toString()+", y nací en la fecha" +
+                    "\n "+dateButton.getText().toString()+"\n\n No me gusta programar.";
+        }else if (rButtonYes.isChecked()){
+            for (CheckBox cb: checkBoxesLanguages
+                 ) {
+                if(cb.isChecked()){
+                    languages.append(cb.getText().toString()).append(", ");
+                }
+            }
+            languages.deleteCharAt(languages.length() -2);
+            message = "Hola! Mi nombre es: "+name.getText().toString()+".\n\n Soy "+spinner.getSelectedItem().toString()+", y nací en la fecha" +
+                    "\n "+dateButton.getText().toString()+"\n\n Me gusta programar. Mis lenguajes favoritos son:\n"+languages;
+        }
+
+        Intent intent = new Intent(this, DisplayInformation.class);
+        intent.putExtra("Message", message);
+        startActivity(intent);
+
+
+    }
+
+    public boolean verificationFields(){
+        boolean verificationFailed = false;
+        if (name.getText().toString().isEmpty() || lastName.getText().toString().isEmpty() || spinner.getSelectedItem().toString().equals("Select")){
+            Toast.makeText(this, "Debe llenar todos los campos de información", Toast.LENGTH_LONG).show();
+            return verificationFailed;
+        }
+        if (rButtonYes.isChecked()){
+            for (CheckBox cb: checkBoxesLanguages) {
+                if (cb.isChecked()){
+                    return true;
+                }
+            }
+            Toast.makeText(this, "Debe seleccionar al menos un lenguaje de Programación", Toast.LENGTH_LONG).show();
+            return verificationFailed;
+
+        }
+
+        return true;
+    }
+
+    public void cleanInputs(View view){
+        name.setText("");
+        lastName.setText("");
+        dateButton.setText(getTodaysDate());
+        spinner.setSelection(0);
+        radioGroup.clearCheck();
+        radioGroup.check(R.id.rb_yes);
+        for (CheckBox cb: checkBoxesLanguages) {
+            cb.setChecked(false);
+        }
+        Toast.makeText(this, "Cleared", Toast.LENGTH_SHORT).show();
 
     }
 
