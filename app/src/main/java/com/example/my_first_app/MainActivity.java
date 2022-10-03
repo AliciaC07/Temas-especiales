@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity{
         if (!verificationFields())return;
 
         if (rButtonNo.isChecked()){
-            message = "Hola! Mi nombre es: "+name.getText().toString()+".\n\n Soy "+spinner.getSelectedItem().toString()+", y nací en la fecha" +
+            message = "Hola! Mi nombre es: "+name.getText().toString()+".\n\n Soy "+spinner.getSelectedItem().toString()+", y nací en la fecha:" +
                     "\n "+dateButton.getText().toString()+"\n\n No me gusta programar.";
         }else if (rButtonYes.isChecked()){
             for (CheckBox cb: checkBoxesLanguages
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
             languages.deleteCharAt(languages.length() -2);
-            message = "Hola! Mi nombre es: "+name.getText().toString()+".\n\n Soy "+spinner.getSelectedItem().toString()+", y nací en la fecha" +
+            message = "Hola! Mi nombre es: "+name.getText().toString()+".\n\n Soy "+spinner.getSelectedItem().toString()+", y nací en la fecha:" +
                     "\n "+dateButton.getText().toString()+"\n\n Me gusta programar. Mis lenguajes favoritos son:\n"+languages;
         }
 
