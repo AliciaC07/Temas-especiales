@@ -79,7 +79,9 @@ public class MainActivity extends AppCompatActivity{
                     "\n "+dateButton.getText().toString()+"\n\n Me gusta programar. Mis lenguajes favoritos son:\n"+languages;
         }
 
-        Intent intent = new Intent(this, DisplayInformation.class);
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("text/plain");
         intent.putExtra("Message", message);
         startActivity(intent);
 
