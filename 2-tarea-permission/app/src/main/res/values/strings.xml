@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Permissions access</string>
+    <string name="txt_info">Choose what to allow APP to access</string>
+    <string name="spn_storage">Storage</string>
+    <string name="spn_location">Location</string>
+    <string name="spn_camera">Camera</string>
+    <string name="spn_phone">Phone</string>
+    <string name="spn_contacts">Contacts</string>
+    <string name="txt_stora">access photos, media, and files on your device</string>
+    <string name="txt_loc">access this device\'s location</string>
+    <string name="txt_cam">take pictures and record video</string>
+    <string name="txt_phone">make and manage phone calls</string>
+    <string name="txt_conatc">access your contacts</string>
+    <string name="bt_cancel">Cancel</string>
+    <string name="bt_continue">Continue</string>
+</resources>
