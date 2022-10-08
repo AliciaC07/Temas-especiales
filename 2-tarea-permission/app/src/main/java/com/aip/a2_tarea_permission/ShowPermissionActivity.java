@@ -86,8 +86,8 @@ public class ShowPermissionActivity extends AppCompatActivity {
         permissions.add(permissionBtn);
 
         permissionBtnL.setBtnPermission(findViewById(R.id.btn_location));
-        permissionBtnL.setPermissionType(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-        if (ContextCompat.checkSelfPermission(ShowPermissionActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        permissionBtnL.setPermissionType(Manifest.permission.ACCESS_FINE_LOCATION);
+        if (ContextCompat.checkSelfPermission(ShowPermissionActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
             permissionBtnL.setGranted(true);
             permissionBtnL.setCode(LOCATION_CODE);
 
