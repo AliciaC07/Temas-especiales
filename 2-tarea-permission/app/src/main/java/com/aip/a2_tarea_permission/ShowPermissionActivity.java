@@ -28,6 +28,8 @@ public class ShowPermissionActivity extends AppCompatActivity {
     private static final int PHONE_CODE = 400;
     private static final int CONTACT_CODE = 500;
 
+    private Boolean cameraDevice = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,8 +98,12 @@ public class ShowPermissionActivity extends AppCompatActivity {
 
         permissionBtnC.setBtnPermission(findViewById(R.id.btn_camera));
         permissionBtnC.setPermissionType(Manifest.permission.CAMERA);
+        if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)){
+            cameraDevice = true;
+        }
         if (ContextCompat.checkSelfPermission(ShowPermissionActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
             permissionBtnC.setGranted(true);
+            permissionBtnC.setCamera(true);
             permissionBtnC.setCode(CAMERA_CODE);
 
         }
@@ -138,7 +144,7 @@ public class ShowPermissionActivity extends AppCompatActivity {
             startActivity(intent);
 
             startActivity(intent);
-        } else if (permissionBtn.getCode() == CAMERA_CODE) {
+        } else if (permissionBtn.getCode() == CAMERA_CODE && permissionBtn.isCamera) {
             intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             startActivity(intent);
             
@@ -161,6 +167,17 @@ public class ShowPermissionActivity extends AppCompatActivity {
         public Boolean granted = false;
 
         public Integer code = 0;
+
+        public Boolean isCamera = false;
+
+        public Boolean getCamera() {
+            return isCamera;
+        }
+
+        public void setCamera(Boolean camera) {
+            isCamera = camera;
+        }
+
 
         public Integer getCode() {
             return code;

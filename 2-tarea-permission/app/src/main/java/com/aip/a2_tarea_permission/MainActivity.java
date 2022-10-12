@@ -71,7 +71,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        grantPermissions(perms);
+        if (perms.isEmpty()){
+            Intent intent = new Intent(this, ShowPermissionActivity.class);
+            startActivity(intent);
+        }else {
+            grantPermissions(perms);
+        }
 
 
     }
