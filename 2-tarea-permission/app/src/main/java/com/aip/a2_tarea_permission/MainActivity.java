@@ -24,7 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private Switch SwContacts;
     private Switch SwPhone;
 
+    private Boolean cameraDevice = false;
+
     private final ArrayList<PermissionBtn> permissionBtns = new ArrayList<>();
+
 
     private Map<String, String> permissionsLabel = new HashMap<>();
 
@@ -58,9 +61,14 @@ public class MainActivity extends AppCompatActivity {
     public void getInfoForPermission(View view){
 
         ArrayList<String> perms = new ArrayList<>();
+
         for (PermissionBtn pm: permissionBtns) {
-            if (pm.getBtnPermission().isChecked() && pm.getBtnPermission().isClickable()){
+            if (pm.getBtnPermission().isChecked() && pm.getBtnPermission().isClickable() && !pm.isCamera){
                 perms.add(pm.getPermissionType());
+            }else if (pm.getBtnPermission().isChecked() && pm.getBtnPermission().isClickable() && pm.isCamera){
+                if (cameraDevice){
+                    perms.add(pm.getPermissionType());
+                }
             }
         }
         grantPermissions(perms);
@@ -117,10 +125,14 @@ public class MainActivity extends AppCompatActivity {
         }permissionBtns.add(permissionBtn);
         permissionBtnC.setBtnPermission(findViewById(R.id.spn_camera));
         permissionBtnC.setPermissionType(Manifest.permission.CAMERA);
+        if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)){
+            cameraDevice = true;
+        }
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
 
             permissionBtnC.setGranted(true);
             permissionBtnC.setCode(CAMERA_CODE);
+            permissionBtnC.setCamera(true);
             SwCamera.setChecked(true);
             SwCamera.setClickable(false);
 
@@ -174,6 +186,16 @@ public class MainActivity extends AppCompatActivity {
         public Boolean granted = false;
 
         public Integer code = 0;
+
+        public Boolean isCamera = false;
+
+        public Boolean getCamera() {
+            return isCamera;
+        }
+
+        public void setCamera(Boolean camera) {
+            isCamera = camera;
+        }
 
         public Integer getCode() {
             return code;
