@@ -1,5 +1,7 @@
 package com.aip.tarea_room;
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,10 +16,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.aip.tarea_room.databinding.FragmentFirstBinding;
 import com.aip.tarea_room.model.Product;
 import com.aip.tarea_room.model.ProductViewModel;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
+//    private StorageReference storageReference;
+//    private DatabaseReference databaseReference;
 
     @Override
     public View onCreateView(
@@ -32,9 +40,16 @@ public class FirstFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+//        storageReference = FirebaseStorage.getInstance().getReference("uploads");
+//        databaseReference = FirebaseDatabase.getInstance().getReference("uploads");
         ItemAdapter adapter = new ItemAdapter();
 
         ProductViewModel productViewModel = new ViewModelProvider(this).get(ProductViewModel.class);
+//        Product product = new Product();
+//        product.setPrice(15.55f);
+//        product.setBrand("Nike");
+//        product.setName("Shirt");
+//        productViewModel.insert(product);
 
 
         RecyclerView recyclerView = binding.recycleView;
@@ -44,6 +59,13 @@ public class FirstFragment extends Fragment {
 
         productViewModel.findAll().observe(getViewLifecycleOwner(), products -> {
             adapter.setList(products);
+        });
+
+        binding.btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NavHostFragment.findNavController(FirstFragment.this).navigate(R.id.registerProduct_Fragment);
+            }
         });
 
 
@@ -56,5 +78,7 @@ public class FirstFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+
 
 }

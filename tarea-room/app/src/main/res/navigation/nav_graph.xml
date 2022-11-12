@@ -25,4 +25,6 @@
                 android:id="@+id/action_SecondFragment_to_FirstFragment"
                 app:destination="@id/FirstFragment"/>
     </fragment>
+    <fragment android:id="@+id/registerProduct_Fragment" android:name="com.aip.tarea_room.RegisterProduct"
+              android:label="RegisterProduct" tools:layout="@layout/fragment_register_product"/>
 </navigation>
