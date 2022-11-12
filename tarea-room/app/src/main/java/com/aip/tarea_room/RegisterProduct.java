@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import com.aip.tarea_room.databinding.FragmentRegisterProductBinding;
 import com.aip.tarea_room.model.Product;
 import com.aip.tarea_room.model.ProductViewModel;
@@ -296,6 +297,7 @@ public class RegisterProduct extends Fragment {
         product.setPrice(Float.parseFloat(binding.priceTxt2.getText().toString()));
         product.setImageUrl(imageUrl);
         productViewModel.insert(product);
+        clear();
 
 
     }

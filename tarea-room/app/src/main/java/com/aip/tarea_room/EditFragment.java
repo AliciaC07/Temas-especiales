@@ -2,31 +2,40 @@ package com.aip.tarea_room;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import com.aip.tarea_room.databinding.FragmentEditBinding;
 import com.aip.tarea_room.databinding.FragmentRegisterProductBinding;
 import com.aip.tarea_room.model.Product;
 import com.aip.tarea_room.model.ProductViewModel;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.squareup.picasso.Picasso;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
+import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -52,6 +61,7 @@ public class EditFragment extends Fragment {
     private StorageTask UploadTask;
     private ProductViewModel productViewModel;
     private Boolean selectedImage = true;
+    private Boolean imageChange = false;
     private StorageReference ref;
 
     public EditFragment() {
@@ -88,7 +98,9 @@ public class EditFragment extends Fragment {
         // Inflate the layout for this fragment
         Bundle re = getArguments();
         Product product = (Product) re.get("product");
+        storageReference = FirebaseStorage.getInstance().getReference();
         binding = FragmentEditBinding.inflate(inflater, container, false);
+        productViewModel = new ViewModelProvider(this).get(ProductViewModel.class);
 
         binding.productName2edit.setText(product.getName());
         binding.brand2edit.setText(product.getBrand());
@@ -104,10 +116,13 @@ public class EditFragment extends Fragment {
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getTitle().equals("Choose From Storage")){
                     chooseImage("image/*");
+                    imageChange = true;
                 } else if (item.getTitle().equals("Choose From Camera")) {
                     takeImage();
+                    imageChange = true;
                 } else if (item.getTitle().equals("Choose From Gallery")) {
                     chooseImage("image/*");
+                    imageChange = true;
                 }
 //                Toast.makeText(binding.getRoot().getContext(),"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
                 return true;
@@ -116,9 +131,95 @@ public class EditFragment extends Fragment {
             popup.show();
         });
         binding.btnClearedit.setOnClickListener(view -> clear());
+        binding.btnSaveedit.setOnClickListener(view -> {
+            if (imageChange){
+                product.setName(binding.productName2edit.getText().toString());
+                product.setBrand(binding.brand2edit.getText().toString());
+                product.setPrice(Float.parseFloat(binding.priceTxt2.getText().toString()));
+                if (!validateData()){
+                    Toast.makeText(binding.getRoot().getContext(), "Must fill all fields", Toast.LENGTH_SHORT).show();
+                }else {
+                    if (UploadTask != null && UploadTask.isInProgress()) {
+                        Toast.makeText(binding.getRoot().getContext(), "Upload in progress", Toast.LENGTH_SHORT).show();
+                    } else {
+                        uploadFile(product);
+                    }
+                }
+
+            }else {
+                if (!validateData()){
+                    Toast.makeText(binding.getRoot().getContext(), "Must fill all fields", Toast.LENGTH_SHORT).show();
+                }else {
+                    product.setName(binding.productName2edit.getText().toString());
+                    product.setBrand(binding.brand2edit.getText().toString());
+                    product.setPrice(Float.parseFloat(binding.priceTxt2.getText().toString()));
+                    updateProduct(product);
+                }
+
+            }
+
+        });
+        binding.btnDelete.setOnClickListener(view -> {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(binding.getRoot().getContext());
+            alertDialogBuilder.setMessage("Are you sure you want to delete this product?");
+            alertDialogBuilder.setPositiveButton("yes",
+                    (arg0, arg1) -> {
+                        delete(product);
+
+                    });
+
+            alertDialogBuilder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
+        });
 
 
         return binding.getRoot();
+    }
+    public void updateProduct(Product product){
+        productViewModel.update(product);
+        clear();
+        NavHostFragment.findNavController(EditFragment.this).navigate(R.id.FirstFragment);
+    }
+    public void delete(Product product){
+        productViewModel.delete(product);
+        clear();
+        NavHostFragment.findNavController(EditFragment.this).navigate(R.id.FirstFragment);
+    }
+    private void uploadFile(Product product) {
+        if (imageUri != null) {
+
+            // Defining the child of storageReference
+            ref
+                    = storageReference
+                    .child(
+                            "images/"
+                                    + UUID.randomUUID().toString());
+
+            UploadTask = ref.putFile(imageUri)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> binding.progressBar.setProgress(0), 500);
+                        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+//                                insertProduct(uri.toString());
+                                product.setImageUrl(uri.toString());
+                                updateProduct(product);
+                            }
+                        });
+                        Toast.makeText(binding.getRoot().getContext(), "Upload successful", Toast.LENGTH_LONG).show();
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(binding.getRoot().getContext(), e.getMessage(), Toast.LENGTH_SHORT).show())
+                    .addOnProgressListener(taskSnapshot -> {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        binding.progressBar.setProgress((int) progress);
+                    });
+        } else {
+            Toast.makeText(binding.getRoot().getContext(), "No file selected", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void clear(){
@@ -127,6 +228,7 @@ public class EditFragment extends Fragment {
         binding.priceTxt2.setText("");
         binding.imageView2edit.setImageResource(android.R.color.transparent);
         selectedImage = false;
+        imageChange = false;
 
     }
     @Override
