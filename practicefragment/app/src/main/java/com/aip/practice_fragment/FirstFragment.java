@@ -1,5 +1,7 @@
 package com.aip.practice_fragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,20 +34,44 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView message = view.findViewById(R.id.txt_message);
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("pucmm", Context.MODE_PRIVATE);
 
 
-        binding.buttonFirst.setOnClickListener(new View.OnClickListener() {
+        binding.btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Message messageSend = new Message();
-                messageSend.setMessage(binding.txtMessage.getText().toString());
-                messageSend.setDateSend(LocalDate.now());
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("message", messageSend);
-                NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_SecondFragment, bundle);
+                String name = binding.txtMessage.getText().toString();
+                String lastName = binding.txtLastname.getText().toString();
+                String id = binding.txtId.getText().toString();
 
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("name", name);
+                editor.putString("lastName", lastName);
+                editor.putString("id", id);
+                editor.apply();
+                clear();
+
+
+
+            }
+        });
+        binding.btnLoad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String name = sharedPreferences.getString("name", "Not found");
+                String lastName = sharedPreferences.getString("lastName", "Not found");
+                String id = sharedPreferences.getString("id", "Not found");
+
+                binding.txtMessage.setText(name);
+                binding.txtLastname.setText(lastName);
+                binding.txtId.setText(id);
+
+            }
+        });
+        binding.btnClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clear();
             }
         });
     }
@@ -54,6 +80,12 @@ public class FirstFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    public void clear(){
+        binding.txtMessage.setText("");
+        binding.txtLastname.setText("");
+        binding.txtId.setText("");
     }
 
 }
