@@ -1,11 +1,16 @@
 package com.aip.tarea_room;
 
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 import com.aip.tarea_room.model.Product;
+import com.squareup.picasso.Picasso;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -17,6 +22,15 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder> {
 
     public ItemAdapter() {
 
+    }
+    public interface OnClickListener{
+        void onItemClick(View itemView, int position);
+    }
+
+    private OnClickListener listener;
+
+    public void setOnClickListener(OnClickListener listener){
+        this.listener = listener;
     }
 
     @NonNull
@@ -33,6 +47,15 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder> {
         holder.getName().setText(product.getName());
         holder.getBrand().setText(product.getBrand());
         holder.getPrice().setText(product.getPrice().toString());
+        Picasso.get().load(product.getImageUrl())
+                .into(holder.getImageView());
+        holder.getEdit().setOnClickListener(view -> {
+            if (listener != null) {
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onItemClick(holder.itemView, position);
+                }
+            }
+        });
 
     }
 
@@ -44,5 +67,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder> {
     public void setList(List<Product> productList) {
         this.products = productList;
         notifyDataSetChanged();
+    }
+    public List<Product> getProducts(){
+        return products;
     }
 }
