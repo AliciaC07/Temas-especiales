@@ -16,6 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -115,13 +119,13 @@ public class EditFragment extends Fragment {
 
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getTitle().equals("Choose From Storage")){
-                    chooseImage("image/*");
+                    imageChooser("image/*");
                     imageChange = true;
                 } else if (item.getTitle().equals("Choose From Camera")) {
                     takeImage();
                     imageChange = true;
                 } else if (item.getTitle().equals("Choose From Gallery")) {
-                    chooseImage("image/*");
+                    imageChooser("gallery");
                     imageChange = true;
                 }
 //                Toast.makeText(binding.getRoot().getContext(),"You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
@@ -181,7 +185,7 @@ public class EditFragment extends Fragment {
     public void updateProduct(Product product){
         productViewModel.update(product);
         clear();
-        NavHostFragment.findNavController(EditFragment.this).navigate(R.id.FirstFragment);
+        //NavHostFragment.findNavController(EditFragment.this).navigate(R.id.FirstFragment);
     }
     public void delete(Product product){
         productViewModel.delete(product);
@@ -202,13 +206,9 @@ public class EditFragment extends Fragment {
                     .addOnSuccessListener(taskSnapshot -> {
                         Handler handler = new Handler();
                         handler.postDelayed(() -> binding.progressBar.setProgress(0), 500);
-                        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-//                                insertProduct(uri.toString());
-                                product.setImageUrl(uri.toString());
-                                updateProduct(product);
-                            }
+                        ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                            product.setImageUrl(uri.toString());
+                            updateProduct(product);
                         });
                         Toast.makeText(binding.getRoot().getContext(), "Upload successful", Toast.LENGTH_LONG).show();
                     })
@@ -227,6 +227,7 @@ public class EditFragment extends Fragment {
         binding.brand2edit.setText("");
         binding.priceTxt2.setText("");
         binding.imageView2edit.setImageResource(android.R.color.transparent);
+        binding.progressBar.setProgress(0);
         selectedImage = false;
         imageChange = false;
 
@@ -236,112 +237,74 @@ public class EditFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-    void chooseImage(String type) {
+    void imageChooser(String type) {
 
         // create an instance of the
         // intent of the type image
         if (type.equals("image/*")){
-            if (ActivityCompat.checkSelfPermission(binding.getRoot().getContext(),Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-               requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE);
-                selectedImage = true;
-            }else {
-                Intent i = new Intent();
-                i.setType(type);
-                i.setAction(Intent.ACTION_GET_CONTENT);
 
-                // pass the constant to compare it
-                // with the returned requestCode
-                startActivityForResult(Intent.createChooser(i, "Select Picture"), STORAGE);
-                selectedImage = true;
-            }
-        }else {
             Intent i = new Intent();
             i.setType(type);
             i.setAction(Intent.ACTION_GET_CONTENT);
+            activityResultLauncher.launch(i);
+            selectedImage = true;
 
-            // pass the constant to compare it
-            // with the returned requestCode
-            startActivityForResult(Intent.createChooser(i, "Select Picture"), SELECT_PICTURE);
+        }else {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            activityResultLauncher.launch(intent);
             selectedImage = true;
         }
 
     }
+
     void takeImage(){
-        if (ActivityCompat.checkSelfPermission(binding.getRoot().getContext(),Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+        if (binding.getRoot().getContext().checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
             selectedImage = true;
         }else {
             Intent camera_intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             // Start the activity with camera_intent, and request pic id
-            startActivityForResult(camera_intent, PICTURE_ID);
+            activityResultLauncherCamera.launch(camera_intent);
             selectedImage = true;
         }
 
     }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == MY_CAMERA_PERMISSION_CODE)
-        {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                Toast.makeText(binding.getRoot().getContext(), "camera permission granted", Toast.LENGTH_LONG).show();
-                Intent camera_intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                // Start the activity with camera_intent, and request pic id
-                startActivityForResult(camera_intent, PICTURE_ID);
-                selectedImage = true;
-            }
-            else
-            {
-                Toast.makeText(binding.getRoot().getContext(), "camera permission denied", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == STORAGE)
-        {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                Toast.makeText(binding.getRoot().getContext(), "storage permission granted", Toast.LENGTH_LONG).show();
-                Intent i = new Intent();
-                i.setType("image/*");
-                i.setAction(Intent.ACTION_GET_CONTENT);
 
-                // pass the constant to compare it
-                // with the returned requestCode
-                startActivityForResult(Intent.createChooser(i, "Select Picture"), SELECT_PICTURE);
-                selectedImage = true;
-            }
-            else
-            {
-                Toast.makeText(binding.getRoot().getContext(), "camera permission denied", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == RESULT_OK){
 
-        if (resultCode == RESULT_OK) {
+                        // Get the url of the image from data
+                        //Uri selectedImageUri = result.getData().getData();
+                        imageUri = result.getData().getData();
+                        if (null != imageUri) {
+                            // update the preview image in the layout
+                            binding.imageView2edit.setImageURI(imageUri);
 
-            // compare the resultCode with the
-            // SELECT_PICTURE constant
-            if (requestCode == SELECT_PICTURE) {
-                // Get the url of the image from data
-                Uri selectedImageUri = data.getData();
-                imageUri = data.getData();
-                if (null != selectedImageUri) {
-                    // update the preview image in the layout
-                    binding.imageView2edit.setImageURI(selectedImageUri);
+                        }
+                    }
                 }
             }
-            if (requestCode == PICTURE_ID) {
-                // BitMap is data structure of image file which store the image in memory
-                Bitmap photo = (Bitmap) data.getExtras().get("data");
-                imageUri = getImageUri(binding.getRoot().getContext(), photo);
-                // Set the image in imageview for display
-                binding.imageView2edit.setImageBitmap(photo);
+
+
+    );
+    private ActivityResultLauncher<Intent> activityResultLauncherCamera = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == RESULT_OK){
+
+                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+                        imageUri = getImageUri(binding.getRoot().getContext(), photo);
+                        // Set the image in imageview for display
+                        binding.imageView2edit.setImageBitmap(photo);
+                    }
+                }
             }
-        }
-    }
+
+
+    );
     public Boolean validateData(){
         if (binding.productName2edit.getText().toString().isEmpty() || binding.brand2edit.getText().toString().isEmpty() || binding.priceTxt2.getText().toString().isEmpty()
                 || !selectedImage){

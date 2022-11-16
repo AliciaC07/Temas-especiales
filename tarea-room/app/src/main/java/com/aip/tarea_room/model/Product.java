@@ -21,5 +21,6 @@ public class Product implements Serializable {
     private String brand;
     private Float price;
     private String imageUrl;
+    private String imageUUid;
 
 }
